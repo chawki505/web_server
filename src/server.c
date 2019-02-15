@@ -7,16 +7,14 @@
 #include <netinet/in.h>
 #include <unistd.h>
 
+#include "server.h"
+
 #define BUFFSIZE 2048
 
 
-int findSuccess(char *buf, int rc);
-
-void reponse(int succes, char *rep, int size);
-
-char *decoupe(char *buf, int size);
-
 int main() {
+
+    /* declaration variables */
 
     int s, c; /* descripteur de socket s = server et c = client */
     struct sockaddr_in6 sin6_server;
@@ -26,7 +24,9 @@ int main() {
 
 
     /* Creation d’un socket serveur */
+
     s = socket(PF_INET6, SOCK_STREAM, 0);
+
     if (s < 0) {
         fprintf(stderr, "Erreur socket\n");
         exit(EXIT_FAILURE);
@@ -36,13 +36,16 @@ int main() {
     /* Association d’une adresse sur un port */
 
     memset(&sin6_server, 0, sizeof(sin6_server));
+
     sin6_server.sin6_family = PF_INET6;
     sin6_server.sin6_port = htons(port);
 
 
     /* permettre la reutilisation du port */
+
     int val = 1;
     int rc_setsocket = setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val));
+
     if (rc_setsocket < 0) {
         fprintf(stderr, "Erreur setsocket\n");
         exit(EXIT_FAILURE);
@@ -50,6 +53,7 @@ int main() {
     //polymorphisme
     val = 0;
     rc_setsocket = setsockopt(s, IPPROTO_IPV6, IPV6_V6ONLY, &val, sizeof(val));
+
     if (rc_setsocket < 0) {
         fprintf(stderr, "Erreur setsocket\n");
         exit(EXIT_FAILURE);
@@ -57,6 +61,7 @@ int main() {
 
 
     int rc_bind = bind(s, (struct sockaddr *) &sin6_server, sizeof(sin6_server));
+
     if (rc_bind < 0) {
         fprintf(stderr, "Erreur bind\n");
         exit(EXIT_FAILURE);
@@ -90,6 +95,7 @@ int main() {
             fprintf(stdout, "Connexion d'un client\n");
 
             int rc_read = (int) read(c, buf_lecture, BUFFSIZE);
+
             if (rc_read == 0) {
                 break;
             }
