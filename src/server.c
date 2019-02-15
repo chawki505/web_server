@@ -18,6 +18,7 @@ int main() {
 
     int s, c; /* descripteur de socket s = server et c = client */
     struct sockaddr_in6 sin6_server;
+    struct sockaddr_in6 sin6_client;
     int port = 8080;
 
 
@@ -39,6 +40,8 @@ int main() {
 
     sin6_server.sin6_family = PF_INET6;
     sin6_server.sin6_port = htons(port);
+
+    
 
 
     /* permettre la reutilisation du port */
@@ -86,8 +89,9 @@ int main() {
     while (1) {
 
         /* Attend une connexion */
-
-        c = accept(s, NULL, NULL);
+        memset(&sin6_client, 0, sizeof(sin6_client));
+        int longueur = sizeof(sin6_client);
+        c = accept(s, (struct sockaddr *) &sin6_client, (socklen_t *) &longueur);
         pid_t pid = fork();
 
         //fils
@@ -134,7 +138,7 @@ int main() {
     return 0;
 }
 
-
+/* Message repondu en foction du succes */
 void reponse(int succes, char *rep, int size) {
 
     int code = (succes > 1) ? 200 : 400;
@@ -159,6 +163,8 @@ void reponse(int succes, char *rep, int size) {
 
 }
 
+/* determine le niveau du succes ( si succes est (0 ou 1)-> code = 400
+ * si succes est (2 (HEAD) ou 3 (GET)) -> code = 200*/
 int findSuccess(char *buf, int rc) {
     int succes = 0;
     char *p2 = decoupe(buf, rc);
@@ -178,6 +184,7 @@ int findSuccess(char *buf, int rc) {
     return succes;
 }
 
+/* retourne NULL si il n y a pas d'espace ou si il n y a rien apres les espaces  */
 char *decoupe(char *buf, int size) {
     if (buf == NULL) {
         return NULL;
